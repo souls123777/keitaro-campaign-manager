@@ -1,0 +1,29 @@
+# Tool configuration only: dependencies live in requirements*.txt.
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# PLR2004 enforces the "no magic numbers" rule.
+select = ["E", "F", "I", "B", "UP", "SIM", "PLR2004"]
+
+[tool.ruff.lint.isort]
+# The local "alembic/" folder makes ruff mistake the installed package for first-party code.
+known-third-party = ["alembic"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLR2004"]
+
+[tool.mypy]
+strict = true
+files = ["app", "tests"]
+
+# BaseSettings fills required fields from the environment, which mypy cannot see.
+[[tool.mypy.overrides]]
+module = "app.config"
+warn_unused_ignores = false
