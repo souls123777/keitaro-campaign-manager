@@ -46,3 +46,32 @@ INVALID_GEO_TEMPLATE = (
 INVALID_OFFER_ID_TEMPLATE = "Offer id must be positive, got {offer_id}."
 INVALID_TRANSITION_TEMPLATE = "Cannot move a campaign from {current} to {target}."
 CAMPAIGN_NOT_FOUND_TEMPLATE = "Campaign {campaign_id} does not exist."
+
+# --- Keitaro -----------------------------------------------------------------
+KEITARO_API_PREFIX = "/admin_api/v1"
+KEITARO_CAMPAIGN_TYPE = "position"
+KEITARO_CAMPAIGN_STATE = "active"
+KEITARO_ALIAS_MAX_ATTEMPTS = 3
+CAMPAIGN_ALIAS_LENGTH = 8
+KEITARO_COUNTRY_STREAM_NAME_TEMPLATE = "Google ({geo})"
+KEITARO_OFFER_STREAM_NAME = "Offers"
+KEITARO_REDIRECT_URL = "https://google.com"
+
+# --- Keitaro streams-----------------------------------------------------------
+KEITARO_STREAMS_PATH = "/streams"
+KEITARO_CAMPAIGN_PATH_TEMPLATE = "/campaigns/{campaign_id}"
+KEITARO_STREAM_TYPE_REGULAR = "regular"
+KEITARO_STREAM_TYPE_DEFAULT = "default"
+KEITARO_STREAM_STATE = "active"
+KEITARO_STREAM_SCHEMA_REDIRECT = "redirect"
+KEITARO_STREAM_SCHEMA_OFFERS = "landings"
+KEITARO_STREAM_ACTION_HTTP = "http"
+KEITARO_FILTER_COUNTRY = "country"
+KEITARO_FILTER_MODE_ACCEPT = "accept"
+KEITARO_FULL_SHARE = 100
+KEITARO_COUNTRY_STREAM_POSITION = 1
+KEITARO_OFFER_STREAM_POSITION = 2
+KEITARO_EMPTY_ACTION_PAYLOAD = ""
+
+# --- Campaign API ------------------------------------------------------------
+CAMPAIGNS_PATH = "/campaigns"

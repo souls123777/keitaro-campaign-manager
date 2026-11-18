@@ -10,18 +10,27 @@ from app import constants
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=constants.ENV_FILE, extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=constants.ENV_FILE,
+        extra="ignore",
+    )
 
     db_host: str = constants.DEFAULT_DB_HOST
     db_port: int = constants.DEFAULT_DB_PORT
     db_name: str
     db_user: str
     db_password: SecretStr
+
     campaign_name_prefix: str
+
+    keitaro_url: str
+    keitaro_api_key: SecretStr
+    keitaro_domain_id: int
+    keitaro_group_id: int
+    keitaro_traffic_source_id: int
 
     @property
     def database_url(self) -> URL:
-        # URL.create escapes special characters in the password, unlike string formatting.
         return URL.create(
             drivername=constants.DB_DRIVER,
             username=self.db_user,
@@ -35,4 +44,4 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()  # type: ignore[call-arg]  # required fields come from the environment
+    return Settings()  # type: ignore[call-arg]

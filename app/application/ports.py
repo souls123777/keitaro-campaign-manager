@@ -25,3 +25,20 @@ class CampaignRegistry(Protocol):
     def list_all(self) -> list[Campaign]:
         """Newest first."""
         ...
+
+
+class KeitaroGateway(Protocol):
+    """Operations available from the Keitaro Admin API."""
+
+    def create_campaign(self, payload: dict[str, object]) -> dict[str, object]:
+        """Create a campaign and return the decoded JSON response."""
+        ...
+
+    def create_stream(self, payload: dict[str, object]) -> dict[str, object]:
+        """Create a stream and return the decoded JSON response."""
+        ...
+
+    def delete_campaign(self, campaign_id: int) -> None:
+        """Delete a campaign together with its streams."""
+        ...
+

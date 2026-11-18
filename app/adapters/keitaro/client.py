@@ -1,0 +1,97 @@
+"""Small synchronous HTTP client for Keitaro Admin API."""
+
+from typing import Any
+
+import httpx
+
+from app import constants
+from app.application.errors import (
+    KeitaroAliasConflict,
+    KeitaroGatewayError,
+)
+
+
+class KeitaroHttpClient:
+    def __init__(
+        self,
+        base_url: str,
+        api_key: str,
+        timeout: float = 30.0,
+        transport: httpx.BaseTransport | None = None,
+    ) -> None:
+        self._client = httpx.Client(
+            base_url=base_url.rstrip("/"),
+            timeout=timeout,
+            transport=transport,
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Api-Key": api_key,
+            },
+        )
+
+    def post(
+        self,
+        path: str,
+        payload: dict[str, object],
+    ) -> dict[str, object]:
+        url = f"{constants.KEITARO_API_PREFIX}{path}"
+
+        try:
+            response = self._client.post(url, json=payload)
+        except httpx.HTTPError as exc:
+            raise KeitaroGatewayError(
+                f"Could not connect to Keitaro: {exc}"
+            ) from exc
+
+        if response.is_error:
+            body = response.text
+
+            if _is_alias_conflict(response.status_code, body):
+                raise KeitaroAliasConflict(
+                    f"Keitaro rejected campaign alias: {body}",
+                    response.status_code,
+                )
+
+            raise KeitaroGatewayError(
+                f"Keitaro API returned HTTP {response.status_code}: {body}",
+                response.status_code,
+            )
+
+        try:
+            data: Any = response.json()
+        except ValueError as exc:
+            raise KeitaroGatewayError(
+                "Keitaro returned a non-JSON response",
+                response.status_code,
+            ) from exc
+
+        if not isinstance(data, dict):
+            raise KeitaroGatewayError(
+                "Keitaro returned an unexpected response format",
+                response.status_code,
+            )
+
+        return data
+
+    def close(self) -> None:
+        self._client.close()
+
+
+def _is_alias_conflict(status_code: int, body: str) -> bool:
+    normalized = body.lower()
+
+    duplicate_markers = (
+        "duplicate",
+        "already exists",
+        "already been taken",
+        "not unique",
+    )
+
+    return "alias" in normalized and (
+        status_code == 409
+        or (
+            status_code in (400, 422)
+            and any(marker in normalized for marker in duplicate_markers)
+        )
+    )
