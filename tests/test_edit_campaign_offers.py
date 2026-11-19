@@ -2,6 +2,7 @@ import copy
 
 import pytest
 
+from app.application.errors import KeitaroGatewayError
 from app.application.use_cases.edit_campaign_offers import (
     CampaignNotEditable,
     EditCampaignOffers,
@@ -10,7 +11,6 @@ from app.application.use_cases.edit_campaign_offers import (
 from app.domain.campaign import Campaign, CampaignName, GeoCodes
 from app.domain.errors import (
     CampaignNotFound,
-    LastOfferRemoval,
     OfferAlreadyInCampaign,
 )
 
@@ -76,7 +76,7 @@ class FakeKeitaro:
 
     def get_offer(self, offer_id: int) -> dict[str, object]:
         if offer_id not in self.known_offers:
-            raise LookupError(offer_id)
+            raise KeitaroGatewayError(f"offer {offer_id} not found", 404)
         return {"id": offer_id, "name": self.known_offers[offer_id]}
 
     def list_offers(self) -> list[dict[str, object]]:
@@ -129,11 +129,11 @@ def test_remove_offer_rebalances() -> None:
     assert [(line.offer_id, line.share) for line in result.offers] == [(1, 50), (3, 50)]
 
 
-def test_cannot_remove_last_offer() -> None:
+def test_last_offer_can_be_removed() -> None:
     editor, keitaro, campaign_id = _setup([1])
-    with pytest.raises(LastOfferRemoval):
-        editor.remove_offer(campaign_id, 1)
-    assert keitaro.updates == []
+    result = editor.remove_offer(campaign_id, 1)
+    assert result.offers == []
+    assert keitaro.updates[0]["offers"] == []
 
 
 def test_duplicate_offer_is_rejected_without_calling_keitaro() -> None:
@@ -145,7 +145,7 @@ def test_duplicate_offer_is_rejected_without_calling_keitaro() -> None:
 
 def test_unknown_offer_is_not_added() -> None:
     editor, keitaro, campaign_id = _setup([1])
-    with pytest.raises(LookupError):
+    with pytest.raises(KeitaroGatewayError):
         editor.add_offer(campaign_id, 999)
     assert keitaro.updates == []
 
@@ -193,3 +193,85 @@ def test_search_respects_limit(monkeypatch: pytest.MonkeyPatch) -> None:
     editor, _, _ = _setup([1])
     monkeypatch.setattr("app.constants.OFFER_SEARCH_LIMIT", 2)
     assert len(editor.search_offers("o")) == 2
+
+
+def test_numeric_query_finds_exact_offer_without_listing() -> None:
+    editor, keitaro, _ = _setup([1])
+    keitaro.list_offers = lambda: pytest.fail("list must not be called")  # type: ignore[method-assign]
+    assert [(item.id, item.name) for item in editor.search_offers("2")] == [(2, "Two")]
+
+
+def test_numeric_query_without_exact_match_falls_back_to_prefix() -> None:
+    editor, keitaro, _ = _setup([1])
+    keitaro.known_offers[120] = "Hundred"
+    keitaro.known_offers[121] = "Hundred one"
+    del keitaro.known_offers[1]
+    assert [item.id for item in editor.search_offers("12")] == [120, 121]
+
+
+def test_streams_without_offers_are_ignored() -> None:
+    editor, keitaro, campaign_id = _setup([1])
+    keitaro.streams.insert(0, {"id": 9, "schema": "landings", "offers": []})
+    result = editor.view(campaign_id)
+    assert [line.offer_id for line in result.offers] == [1]
+
+
+def test_offer_stream_without_offers_is_still_editable() -> None:
+    editor, keitaro, campaign_id = _setup([])
+    result = editor.add_offer(campaign_id, 2)
+    assert [(line.offer_id, line.share) for line in result.offers] == [(2, 100)]
+    assert keitaro.updates[0]["offers"]
+
+
+def test_replace_adds_and_removes_in_one_push() -> None:
+    editor, keitaro, campaign_id = _setup([1, 2])
+    result = editor.replace_offers(campaign_id, [2, 3, 4])
+    assert [(line.offer_id, line.share) for line in result.offers] == [(2, 34), (3, 33), (4, 33)]
+    assert len(keitaro.updates) == 1
+
+
+def test_replace_keeps_the_given_order() -> None:
+    editor, _, campaign_id = _setup([1, 2])
+    result = editor.replace_offers(campaign_id, [2, 1])
+    assert [line.offer_id for line in result.offers] == [2, 1]
+
+
+def test_replace_with_nothing_empties_the_stream_and_it_stays_editable() -> None:
+    editor, keitaro, campaign_id = _setup([1])
+    assert editor.replace_offers(campaign_id, []).offers == []
+    assert [line.offer_id for line in editor.add_offer(campaign_id, 1).offers] == [1]
+
+
+def test_replace_with_unknown_offer_changes_nothing() -> None:
+    editor, keitaro, campaign_id = _setup([1])
+    with pytest.raises(KeitaroGatewayError):
+        editor.replace_offers(campaign_id, [1, 999])
+    assert keitaro.updates == []
+
+
+def test_update_payload_contains_only_fields_keitaro_accepts() -> None:
+    editor, keitaro, campaign_id = _setup([1])
+    keitaro.streams[1].update(
+        {
+            "campaign_id": KEITARO_CAMPAIGN_ID,
+            "type": "default",
+            "name": "Offers",
+            "position": 2,
+            "action_options": None,
+            "comments": "",
+            "offer_selection": "before_click",
+            "filters": [{"id": 7, "stream_id": 11, "oid": 7, "name": "country", "mode": "accept"}],
+            "triggers": [],
+            "landings": [
+                {"id": 3, "stream_id": 11, "landing_id": 5, "share": 100, "state": "active"}
+            ],
+        }
+    )
+    editor.add_offer(campaign_id, 2)
+    payload = keitaro.updates[0]
+    assert set(payload) == {
+        "campaign_id", "type", "name", "position", "comments", "schema",
+        "filters", "triggers", "landings", "offers",
+    }  # fmt: skip
+    assert payload["filters"] == [{"id": 7, "name": "country", "mode": "accept"}]
+    assert payload["landings"] == [{"landing_id": 5, "share": 100, "state": "active"}]

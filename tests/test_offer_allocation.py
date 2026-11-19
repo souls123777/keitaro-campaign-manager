@@ -2,7 +2,6 @@ import pytest
 
 from app.domain.errors import (
     InvalidOfferId,
-    LastOfferRemoval,
     OfferAlreadyInCampaign,
     OfferNotInCampaign,
 )
@@ -61,6 +60,11 @@ def test_remove_missing_offer_is_rejected() -> None:
         OfferAllocation.of([1, 2]).remove(9)
 
 
-def test_cannot_remove_last_offer() -> None:
-    with pytest.raises(LastOfferRemoval):
-        OfferAllocation.of([1]).remove(1)
+def test_last_offer_can_be_removed() -> None:
+    allocation = OfferAllocation.of([1]).remove(1)
+    assert allocation.offer_ids == ()
+    assert allocation.shares() == []
+
+
+def test_offer_can_be_added_to_an_empty_allocation() -> None:
+    assert _shares(OfferAllocation.of([]).add(5)) == [100]
