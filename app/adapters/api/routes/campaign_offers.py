@@ -35,7 +35,7 @@ _STATUS_BY_ERROR: dict[type[Exception], int] = {
     OfferAlreadyInCampaign: status.HTTP_409_CONFLICT,
     CampaignNotEditable: status.HTTP_409_CONFLICT,
     OfferStreamNotFound: status.HTTP_409_CONFLICT,
-    InvalidOfferId: status.HTTP_422_UNPROCESSABLE_ENTITY,
+    InvalidOfferId: status.HTTP_422_UNPROCESSABLE_CONTENT,
     KeitaroGatewayError: status.HTTP_502_BAD_GATEWAY,
 }
 
