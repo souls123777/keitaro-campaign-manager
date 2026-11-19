@@ -10,7 +10,7 @@ from app.domain.errors import CampaignNotFound
 
 
 class SqlAlchemyCampaignRegistry:
-    """Implements the CampaignRegistry port.
+    """CampaignRegistry backed by the `campaigns` table.
 
     Every method commits at once: a campaign must be stored as `pending` before Keitaro is
     called, and that record has to survive a crash in the middle of the creation.

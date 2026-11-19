@@ -85,6 +85,9 @@ class FakeKeitaro:
     def delete_campaign(self, campaign_id: int) -> None:
         raise NotImplementedError
 
+    def close(self) -> None:
+        pass
+
 
 def _setup(offers: list[int]) -> tuple[EditCampaignOffers, FakeKeitaro, int]:
     registry = FakeRegistry()

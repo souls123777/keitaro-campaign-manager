@@ -11,6 +11,7 @@ from app.application.errors import (
 )
 from app.application.ports import CampaignRegistry, KeitaroGateway
 from app.domain.campaign import Campaign, CampaignName, GeoCodes
+from app.domain.errors import CampaignAlreadyExists
 
 
 class CreateCampaignError(Exception):
@@ -18,6 +19,8 @@ class CreateCampaignError(Exception):
 
 
 class CreateCampaign:
+    """Register a campaign as pending, then create it and its streams in Keitaro."""
+
     def __init__(
         self,
         registry: CampaignRegistry,
@@ -40,6 +43,7 @@ class CreateCampaign:
         geo: str,
         offer_id: int,
     ) -> Campaign:
+        """Create a campaign with two streams and return it once Keitaro is done."""
         campaign = Campaign(
             name=CampaignName.create(name, self._name_prefix),
             alias=_generate_alias(),
@@ -47,7 +51,13 @@ class CreateCampaign:
             offer_id=offer_id,
         )
 
-        # Сначала сохраняем pending, чтобы запись пережила сбой процесса.
+        # Save as pending first so the record survives a crash in the middle of creation.
+        for existing in self._registry.list_all():
+            if existing.name == campaign.name:
+                raise CampaignAlreadyExists(
+                    constants.CAMPAIGN_ALREADY_EXISTS_TEMPLATE.format(name=campaign.name.value)
+                )
+
         self._registry.add(campaign)
 
         payload = self._build_payload(campaign)
@@ -136,27 +146,17 @@ class CreateCampaign:
             }
         )
 
+
 def _generate_alias() -> str:
     alphabet = string.ascii_letters + string.digits
 
-    return "".join(
-        secrets.choice(alphabet)
-        for _ in range(constants.CAMPAIGN_ALIAS_LENGTH)
-    )
+    return "".join(secrets.choice(alphabet) for _ in range(constants.CAMPAIGN_ALIAS_LENGTH))
 
 
 def _extract_campaign_id(response: dict[str, object]) -> int:
     raw_id = response.get("id")
 
-    if (
-        isinstance(raw_id, bool)
-        or not isinstance(raw_id, int)
-        or raw_id <= 0
-    ):
-        raise KeitaroResponseError(
-            "Keitaro response does not contain a valid positive campaign id"
-        )
+    if isinstance(raw_id, bool) or not isinstance(raw_id, int) or raw_id <= 0:
+        raise KeitaroResponseError("Keitaro response does not contain a valid positive campaign id")
 
     return raw_id
-
-

@@ -116,8 +116,5 @@ def _is_alias_conflict(status_code: int, body: str) -> bool:
 
     return "alias" in normalized and (
         status_code == constants.HTTP_ALIAS_CONFLICT_STATUS
-        or (
-            status_code in (400, 422)
-            and any(marker in normalized for marker in duplicate_markers)
-        )
+        or (status_code in (400, 422) and any(marker in normalized for marker in duplicate_markers))
     )

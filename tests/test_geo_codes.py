@@ -26,7 +26,7 @@ def test_rejects_input_without_codes(raw: str) -> None:
         GeoCodes.parse(raw)
 
 
-@pytest.mark.parametrize("bad_code", ["MEX", "M", "M1", "12", "МХ"])
+@pytest.mark.parametrize("bad_code", ["MEX", "M", "M1", "12", "\u041c\u0425"])
 def test_rejects_codes_that_are_not_two_ascii_letters(bad_code: str) -> None:
     with pytest.raises(InvalidGeoCodes, match=bad_code):
         GeoCodes.parse(f"AU,{bad_code}")

@@ -12,7 +12,7 @@ from app.application.use_cases.create_campaign import (
     CreateCampaignError,
 )
 from app.domain.campaign import Campaign
-from app.domain.errors import DomainError
+from app.domain.errors import CampaignAlreadyExists, DomainError
 
 router = APIRouter()
 
@@ -77,6 +77,12 @@ def create_campaign(
             geo=payload.geo,
             offer_id=payload.offer_id,
         )
+
+    except CampaignAlreadyExists as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
 
     except DomainError as exc:
         raise HTTPException(

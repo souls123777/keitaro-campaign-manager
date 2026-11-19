@@ -110,6 +110,7 @@ const SEARCH_DELAY_MS = 250;
 const MIN_QUERY_LENGTH = 1;
 const FULL_SHARE = 100;
 const STATE = { KEPT: "kept", ADDED: "added", REMOVED: "removed" };
+const STATUS_CONFLICT = 409;
 
 const $ = (id) => document.getElementById(id);
 
@@ -117,6 +118,14 @@ function el(tag, props = {}, ...children) {
   const node = Object.assign(document.createElement(tag), props);
   node.append(...children);
   return node;
+}
+
+/* An HTTP error that keeps the status code, so callers can tell a conflict from a failure. */
+class ApiError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.status = status;
+  }
 }
 
 async function request(url, options = {}) {
@@ -127,10 +136,14 @@ async function request(url, options = {}) {
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
   if (!response.ok) {
+    /* Validation errors come as a list of objects; the rest as a plain string. */
     const detail = data && data.detail;
-    throw new Error(
-      typeof detail === "string" ? detail : detail ? JSON.stringify(detail) : `HTTP ${response.status}`
-    );
+    const message = typeof detail === "string"
+      ? detail
+      : Array.isArray(detail) && detail.length && typeof detail[0].msg === "string"
+        ? detail.map((item) => item.msg).join("; ")
+        : detail ? JSON.stringify(detail) : `HTTP ${response.status}`;
+    throw new ApiError(message, response.status);
   }
   return data;
 }
@@ -227,6 +240,7 @@ $("create-form").addEventListener("submit", async (event) => {
     showMessage(message, "ok", `Created: ${created.name} (Keitaro ID ${created.keitaro_id ?? "—"}, status ${created.status}).`);
     $("c-name").value = ""; $("c-geo").value = ""; createPicked.reset();
   } catch (error) {
+    if (error.status === STATUS_CONFLICT) $("c-name").focus();
     showMessage(message, "err", error.message);
   } finally {
     button.disabled = false;

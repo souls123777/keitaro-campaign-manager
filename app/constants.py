@@ -46,6 +46,7 @@ INVALID_GEO_TEMPLATE = (
 INVALID_OFFER_ID_TEMPLATE = "Offer id must be positive, got {offer_id}."
 INVALID_TRANSITION_TEMPLATE = "Cannot move a campaign from {current} to {target}."
 CAMPAIGN_NOT_FOUND_TEMPLATE = "Campaign {campaign_id} does not exist."
+CAMPAIGN_ALREADY_EXISTS_TEMPLATE = "Campaign {name} has already been created."
 
 # --- Keitaro -----------------------------------------------------------------
 KEITARO_API_PREFIX = "/admin_api/v1"
@@ -86,15 +87,35 @@ LAST_OFFER_REMOVAL_MESSAGE = "A campaign must keep at least one offer."
 
 # Fields Keitaro accepts in PUT /streams/{id}; anything else from GET is dropped.
 KEITARO_STREAM_UPDATE_FIELDS = (
-    "campaign_id", "type", "name", "position", "weight", "action_options",
-    "comments", "state", "action_type", "action_payload", "schema",
-    "collect_clicks", "filter_or",
+    "campaign_id",
+    "type",
+    "name",
+    "position",
+    "weight",
+    "action_options",
+    "comments",
+    "state",
+    "action_type",
+    "action_payload",
+    "schema",
+    "collect_clicks",
+    "filter_or",
 )
 KEITARO_STREAM_FILTER_FIELDS = ("id", "name", "mode", "payload")
 KEITARO_STREAM_TRIGGER_FIELDS = (
-    "id", "stream_id", "condition", "target", "selected_page", "pattern",
-    "action", "interval", "alternative_urls", "grab_from_page", "av_settings",
-    "reverse", "scan_page",
+    "id",
+    "stream_id",
+    "condition",
+    "target",
+    "selected_page",
+    "pattern",
+    "action",
+    "interval",
+    "alternative_urls",
+    "grab_from_page",
+    "av_settings",
+    "reverse",
+    "scan_page",
 )
 KEITARO_STREAM_LANDING_FIELDS = ("landing_id", "share", "state")
 OFFER_SEARCH_LIMIT = 20

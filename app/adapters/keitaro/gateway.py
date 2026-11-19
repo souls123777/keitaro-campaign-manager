@@ -6,6 +6,8 @@ from app.application.ports import KeitaroGateway
 
 
 class KeitaroHttpGateway(KeitaroGateway):
+    """Maps the gateway operations onto Keitaro Admin API paths."""
+
     def __init__(self, client: KeitaroHttpClient) -> None:
         self._client = client
 
@@ -13,7 +15,7 @@ class KeitaroHttpGateway(KeitaroGateway):
         self,
         payload: dict[str, object],
     ) -> dict[str, object]:
-        return self._client.post("/campaigns", payload)
+        return self._client.post(constants.KEITARO_CAMPAIGN_PATH, payload)
 
     def create_stream(self, payload: dict[str, object]) -> dict[str, object]:
         return self._client.post(constants.KEITARO_STREAMS_PATH, payload)
@@ -37,4 +39,3 @@ class KeitaroHttpGateway(KeitaroGateway):
 
     def close(self) -> None:
         self._client.close()
-
