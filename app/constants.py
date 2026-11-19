@@ -134,6 +134,7 @@ KEITARO_STREAMS_OF_CAMPAIGN_PATH = "/campaigns/{campaign_id}/streams"
 KEITARO_STREAM_PATH = "/streams/{stream_id}"
 KEITARO_OFFERS_PATH = "/offers"
 KEITARO_OFFER_PATH = "/offers/{offer_id}"
+KEITARO_CAMPAIGNS_PATH = "/campaigns"
 KEITARO_CAMPAIGN_PATH = "/campaigns/{campaign_id}"
 
 # --- HTTP --------------------------------------------------------------------

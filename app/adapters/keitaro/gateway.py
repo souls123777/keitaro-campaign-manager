@@ -15,7 +15,7 @@ class KeitaroHttpGateway(KeitaroGateway):
         self,
         payload: dict[str, object],
     ) -> dict[str, object]:
-        return self._client.post(constants.KEITARO_CAMPAIGN_PATH, payload)
+        return self._client.post(constants.KEITARO_CAMPAIGNS_PATH, payload)
 
     def create_stream(self, payload: dict[str, object]) -> dict[str, object]:
         return self._client.post(constants.KEITARO_STREAMS_PATH, payload)
