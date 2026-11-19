@@ -12,6 +12,8 @@ from app.application.errors import (
 
 
 class KeitaroHttpClient:
+    """Talks JSON to the Keitaro Admin API and turns its errors into gateway errors."""
+
     def __init__(
         self,
         base_url: str,
@@ -54,6 +56,7 @@ class KeitaroHttpClient:
         self._send(constants.HTTP_DELETE, path)
 
     def close(self) -> None:
+        """Release the underlying HTTP connection pool."""
         self._client.close()
 
     def _send(
@@ -112,7 +115,7 @@ def _is_alias_conflict(status_code: int, body: str) -> bool:
     )
 
     return "alias" in normalized and (
-        status_code == 409
+        status_code == constants.HTTP_ALIAS_CONFLICT_STATUS
         or (
             status_code in (400, 422)
             and any(marker in normalized for marker in duplicate_markers)

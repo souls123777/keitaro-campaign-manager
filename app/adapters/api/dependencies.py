@@ -1,5 +1,7 @@
-from collections.abc import Iterator
-from typing import Callable
+"""FastAPI dependencies shared by the routers."""
+
+from collections.abc import Callable, Iterator
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session, sessionmaker
@@ -8,9 +10,7 @@ from app.application.use_cases.create_campaign import CreateCampaign
 
 
 def get_session(request: Request) -> Iterator[Session]:
-    session_factory: sessionmaker[Session] = (
-        request.app.state.session_factory
-    )
+    session_factory: sessionmaker[Session] = request.app.state.session_factory
 
     with session_factory() as session:
         yield session
@@ -18,7 +18,7 @@ def get_session(request: Request) -> Iterator[Session]:
 
 def get_create_campaign(
     request: Request,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ) -> CreateCampaign:
     factory: Callable[[Session], CreateCampaign] | None = getattr(
         request.app.state,

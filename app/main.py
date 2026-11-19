@@ -11,7 +11,6 @@ from app.application.use_cases.create_campaign import CreateCampaign
 from app.application.use_cases.edit_campaign_offers import EditCampaignOffers
 from app.config import get_settings
 
-
 settings = get_settings()
 
 session_factory = create_session_factory(settings)
@@ -35,10 +34,13 @@ def create_campaign_factory(session: Session) -> CreateCampaign:
     )
 
 
+def edit_offers_factory(session: Session) -> EditCampaignOffers:
+    return EditCampaignOffers(SqlAlchemyCampaignRegistry(session), keitaro_gateway)
+
 
 app = create_app(
     session_factory=session_factory,
     create_campaign_factory=create_campaign_factory,
-    edit_offers_factory=lambda session: EditCampaignOffers(SqlAlchemyCampaignRegistry(session), keitaro_gateway),
+    edit_offers_factory=edit_offers_factory,
     close_keitaro=keitaro_gateway.close,
 )

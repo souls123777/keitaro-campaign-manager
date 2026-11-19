@@ -116,6 +116,7 @@ KEITARO_OFFER_PATH = "/offers/{offer_id}"
 KEITARO_CAMPAIGN_PATH = "/campaigns/{campaign_id}"
 
 # --- HTTP --------------------------------------------------------------------
+HTTP_ALIAS_CONFLICT_STATUS = 409
 HTTP_GET = "GET"
 HTTP_POST = "POST"
 HTTP_PUT = "PUT"

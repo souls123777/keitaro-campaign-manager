@@ -27,6 +27,7 @@ from app.domain.errors import (
 
 router = APIRouter()
 
+
 T = TypeVar("T")
 
 _STATUS_BY_ERROR: dict[type[Exception], int] = {
@@ -41,6 +42,8 @@ _STATUS_BY_ERROR: dict[type[Exception], int] = {
 
 
 class CampaignOut(BaseModel):
+    """A campaign shown in the editor header and the list."""
+
     id: int
     name: str
     alias: str
@@ -50,32 +53,43 @@ class CampaignOut(BaseModel):
 
 
 class OfferLineOut(BaseModel):
+    """One row of the offer table: the offer and its current share of the traffic."""
+
     offer_id: int
     name: str
     share: int
 
 
 class CampaignOffersOut(BaseModel):
+    """A campaign together with the offers it currently has in Keitaro."""
+
     campaign: CampaignOut
     offers: list[OfferLineOut]
 
 
 class OfferSummaryOut(BaseModel):
+    """An offer shown in the autocomplete."""
+
     id: int
     name: str
 
 
 class AddOfferIn(BaseModel):
+    """Offer id to add to a campaign."""
+
     offer_id: int
 
 
 class ReplaceOffersIn(BaseModel):
+    """The full offer list of the editor draft."""
+
     offer_ids: list[int]
 
 
 def get_editor(
     request: Request, session: Annotated[Session, Depends(get_session)]
 ) -> EditCampaignOffers:
+    """Build the offer editor wired to the request's database session."""
     factory: Callable[[Session], EditCampaignOffers] | None = request.app.state.edit_offers_factory
     if factory is None:
         raise HTTPException(

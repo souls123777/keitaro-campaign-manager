@@ -14,11 +14,12 @@ from app.application.use_cases.create_campaign import (
 from app.domain.campaign import Campaign
 from app.domain.errors import DomainError
 
-
 router = APIRouter()
 
 
 class CreateCampaignRequest(BaseModel):
+    """User input for a new campaign."""
+
     name: str = Field(
         min_length=1,
         max_length=constants.CAMPAIGN_NAME_MAX_LENGTH,
@@ -28,6 +29,8 @@ class CreateCampaignRequest(BaseModel):
 
 
 class CampaignResponse(BaseModel):
+    """A stored campaign as returned to the client."""
+
     id: int
     keitaro_id: int | None
     name: str
@@ -39,6 +42,7 @@ class CampaignResponse(BaseModel):
 
     @classmethod
     def from_entity(cls, campaign: Campaign) -> "CampaignResponse":
+        """Build the response from a stored campaign."""
         if campaign.id is None:
             raise RuntimeError("Stored campaign must have a local id")
 
@@ -66,6 +70,7 @@ def create_campaign(
         Depends(get_create_campaign),
     ],
 ) -> CampaignResponse:
+    """Create a campaign in Keitaro and store it in our registry."""
     try:
         campaign = use_case.execute(
             name=payload.name,
