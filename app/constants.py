@@ -75,3 +75,48 @@ KEITARO_EMPTY_ACTION_PAYLOAD = ""
 
 # --- Campaign API ------------------------------------------------------------
 CAMPAIGNS_PATH = "/campaigns"
+
+# --- Offer allocation ---
+FULL_SHARE = 100
+OFFER_ALREADY_IN_CAMPAIGN_TEMPLATE = "Offer {offer_id} is already in this campaign."
+OFFER_NOT_IN_CAMPAIGN_TEMPLATE = "Offer {offer_id} is not in this campaign."
+LAST_OFFER_REMOVAL_MESSAGE = "A campaign must keep at least one offer."
+
+# --- Editor ---
+
+# Fields Keitaro accepts in PUT /streams/{id}; anything else from GET is dropped.
+KEITARO_STREAM_UPDATE_FIELDS = (
+    "campaign_id", "type", "name", "position", "weight", "action_options",
+    "comments", "state", "action_type", "action_payload", "schema",
+    "collect_clicks", "filter_or",
+)
+KEITARO_STREAM_FILTER_FIELDS = ("id", "name", "mode", "payload")
+KEITARO_STREAM_TRIGGER_FIELDS = (
+    "id", "stream_id", "condition", "target", "selected_page", "pattern",
+    "action", "interval", "alternative_urls", "grab_from_page", "av_settings",
+    "reverse", "scan_page",
+)
+KEITARO_STREAM_LANDING_FIELDS = ("landing_id", "share", "state")
+OFFER_SEARCH_LIMIT = 20
+CAMPAIGN_NOT_EDITABLE_TEMPLATE = (
+    "Campaign {campaign_id} is not active in Keitaro and cannot be edited."
+)
+OFFER_STREAM_NOT_FOUND_TEMPLATE = "Campaign {campaign_id} has no stream with offers."
+CAMPAIGNS_LIST_PATH = "/campaigns"
+CAMPAIGN_OFFERS_PATH = "/campaigns/{campaign_id}/offers"
+CAMPAIGN_OFFER_PATH = "/campaigns/{campaign_id}/offers/{offer_id}"
+OFFERS_SEARCH_PATH = "/offers"
+STATIC_DIR_NAME = "static"
+STATIC_MOUNT_PATH = "/"
+EDITOR_NOT_CONFIGURED_MESSAGE = "The offer editor is not configured."
+KEITARO_STREAMS_OF_CAMPAIGN_PATH = "/campaigns/{campaign_id}/streams"
+KEITARO_STREAM_PATH = "/streams/{stream_id}"
+KEITARO_OFFERS_PATH = "/offers"
+KEITARO_OFFER_PATH = "/offers/{offer_id}"
+KEITARO_CAMPAIGN_PATH = "/campaigns/{campaign_id}"
+
+# --- HTTP --------------------------------------------------------------------
+HTTP_GET = "GET"
+HTTP_POST = "POST"
+HTTP_PUT = "PUT"
+HTTP_DELETE = "DELETE"

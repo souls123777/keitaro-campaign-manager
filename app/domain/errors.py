@@ -23,3 +23,14 @@ class InvalidStatusTransition(DomainError):
 
 class CampaignNotFound(DomainError):
     pass
+
+class OfferAlreadyInCampaign(DomainError):
+    pass
+
+
+class OfferNotInCampaign(DomainError):
+    pass
+
+
+class LastOfferRemoval(DomainError):
+    pass

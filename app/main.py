@@ -8,6 +8,7 @@ from app.adapters.db.session import create_session_factory
 from app.adapters.keitaro.client import KeitaroHttpClient
 from app.adapters.keitaro.gateway import KeitaroHttpGateway
 from app.application.use_cases.create_campaign import CreateCampaign
+from app.application.use_cases.edit_campaign_offers import EditCampaignOffers
 from app.config import get_settings
 
 
@@ -34,8 +35,10 @@ def create_campaign_factory(session: Session) -> CreateCampaign:
     )
 
 
+
 app = create_app(
     session_factory=session_factory,
     create_campaign_factory=create_campaign_factory,
+    edit_offers_factory=lambda session: EditCampaignOffers(SqlAlchemyCampaignRegistry(session), keitaro_gateway),
     close_keitaro=keitaro_gateway.close,
 )
